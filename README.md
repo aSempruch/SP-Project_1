@@ -1,2 +1,2 @@
-# -SP-Project-1
+# SP-Project_1
 Systems Programming - Project 1
