@@ -33,7 +33,24 @@ Algorithm Breakdown: We recusively traverse all directories, forking a new proce
 	}
 
 	void ProcessDir(directory){
-
+		while(directory)
+		{
+			if(.csv)	
+			{	
+				fork();
+				if(childProcess)
+				{
+					sort();
+					return;
+				}
+				else if(parentProcess)
+				{
+					continueTraversing;
+				}
+			}
+			
+		}
+			
 	}
 
 Project Outline:
