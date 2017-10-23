@@ -56,4 +56,8 @@ Algorithm Breakdown: We recusively traverse all directories, forking a new proce
 Project Outline:
 
 	1. Get parameters from command line.
-	2. 
+	2.
+
+
+
+Note: if file is bad, we can just ignore it and not sort that file. I guess terminate that fork process?  
