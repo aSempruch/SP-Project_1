@@ -40,13 +40,20 @@ Algorithm Breakdown: We recusively traverse all directories, forking a new proce
 				fork();
 				if(childProcess)
 				{
-					sort();
+					file = openFile(currentFile);
+					if(checkIfFileIsBad(file)){
+							close(file);
+							return; //This means the file is bad
+					}
+					sort(file);
 					return;
 				}
-				else if(parentProcess)
-				{
-					continueTraversing;
-				}
+
+				//I don't think we need this conditional since it will continue traversing either way
+				//else if(parentProcess)
+				//{
+				//	continueTraversing;
+				//}
 			}
 			
 		}
