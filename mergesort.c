@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sorter.h"
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <dirent.h>
+
+
 
 void mergesort(movie **array, int l, int r, char *word)
 {
@@ -406,4 +412,17 @@ void merge(movie **array, int l, int m, int r, char *word)
 
 free(left);
 free(right);
+}
+
+
+void procDir(DIR dp)
+{
+	char file[50];
+	while(readdir(dp) != NULL)
+	{
+		file = 
+		
+	}
+
+
 }
