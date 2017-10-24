@@ -3,11 +3,15 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <dirent.h>
 #include "sorter.h"
 
 int entry;
 char stream[1024];
 movie** info;
+
+DIR *dir;
+struct dirent *ep;
 
 void allocate(int rows){
 	int r;
@@ -224,15 +228,48 @@ FILE* stdinToFile(){
 int main(int argc, char* argv[])
 {
 	
-	if(argc != 3)
+	if(argc < 3)
 	{
 		printf("ERROR00: Invalid number of inputs. Exiting\n");
 		return 0;
 	}
-	if(strcmp(argv[1], "-c") != 0){
-		printf("ERROR01: Invalid value type to sort on. Exiting\n");
-		return 0;
+	int i,o = 0, d = 0, c = 0;
+	for(i = 1; i < argc; i++){
+		if(argv[i][0] == '-'){
+			if(i+1 >= argc){
+				printf("ERROR09: Invalid parameters. Exiting\n");
+				return 0;
+			}
+			switch(argv[i][1]){
+					case 'c':
+							c = i+1;
+							break;
+					case 'd':
+							d = i+1;
+							break;
+					case 'o':
+							o = i+1;
+							break;
+					default:
+							printf("ERROR08: Invalid parameter. Exiting\n");
+							return 0;
+			}
+		}
 	}
+
+	//printf("c: %d d: %d o: %d\n", c, d, o);
+	
+	/* TODO: Add error checking for directory opening */ 
+	if(d > 0)
+			dir = opendir(argv[d]);
+	else
+			dir = opendir("./");
+
+
+	/*	RECURSIVE MANAGER	*/
+	
+	
+
 		
 	/*		STEP 1
 	 *Note: 'info' will be the array the file will be written into.
