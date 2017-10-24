@@ -414,15 +414,43 @@ free(left);
 free(right);
 }
 
-
-void procDir(DIR dp)
+int testString(char *str)
 {
-	char file[50];
-	while(readdir(dp) != NULL)
+	/*check if last 4 chars in string are .csv*/
+
+	int len = strlen(str);
+	const char *last4 = &str[len-4];
+	return((last4 && ".csv") == 0) ? 0:1;
+
+}
+
+void ProcessDir(DIR dp)
+{
+	struct dirent *dirPtr;
+	while(dp != NULL)
 	{
-		file = 
+		dirPtr  = readdir(dp);
+		puts(dirPtr->d_name);
+		if (testString(dirPtr->name) == 0)
+		{
+			
+			
+		}
+		
 		
 	}
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
