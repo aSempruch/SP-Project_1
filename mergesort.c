@@ -433,8 +433,9 @@ void ProcessDir(DIR dp)
 		puts(dirPtr->d_name);
 		if (testString(dirPtr->name) == 0)
 		{
-			
-			
+			fork();
+			FILE *file = stdinToFile();
+			mergesort(info, 0, numOfEnteries-2,argv[2]);	
 		}
 		
 		
