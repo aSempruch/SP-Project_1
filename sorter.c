@@ -7,6 +7,7 @@
 #include "sorter.h"
 
 int entry;
+char *c, *o, *d;
 char stream[1024];
 movie** info;
 
@@ -222,56 +223,18 @@ FILE* stdinToFile(){
 	return fp;
 }
 
+void Recurse(DIR *dir){
+    while(ep = readdir(dir)){
+        if(strcmp(&ep->d_name[strlen(ep->d_name)-4], ".csv") == 0){ //Found csv file
+            printf("Found csv file titled %s\n", ep->d_name);
+            
+                        
+        }
+    }
+}
 
-
-
-int main(int argc, char* argv[])
-{
-	
-	if(argc < 3)
-	{
-		printf("ERROR00: Invalid number of inputs. Exiting\n");
-		return 0;
-	}
-	int i,o = 0, d = 0, c = 0;
-	for(i = 1; i < argc; i++){
-		if(argv[i][0] == '-'){
-			if(i+1 >= argc){
-				printf("ERROR09: Invalid parameters. Exiting\n");
-				return 0;
-			}
-			switch(argv[i][1]){
-					case 'c':
-							c = i+1;
-							break;
-					case 'd':
-							d = i+1;
-							break;
-					case 'o':
-							o = i+1;
-							break;
-					default:
-							printf("ERROR08: Invalid parameter. Exiting\n");
-							return 0;
-			}
-		}
-	}
-
-	//printf("c: %d d: %d o: %d\n", c, d, o);
-	
-	/* TODO: Add error checking for directory opening */ 
-	if(d > 0)
-			dir = opendir(argv[d]);
-	else
-			dir = opendir("./");
-
-
-	/*	RECURSIVE MANAGER	*/
-	
-	
-
-		
-	/*		STEP 1
+void CsvHandler(char* fileName){
+    /*		STEP 1
 	 *Note: 'info' will be the array the file will be written into.
 	 *Also the file pointer and opener will be innitalized here too. 
 	 */
@@ -309,7 +272,7 @@ int main(int argc, char* argv[])
                 printf("ERROR02: Empty input. Exiting Program.\n");
                 return 0;
         }
-        else if(getKey(argv[2]) == 30)
+        else if(getKey(c) == 30)
         {
                 printf("ERROR03: Invalid key word. Exiting Program.\n");
                 return 0;
@@ -344,7 +307,7 @@ int main(int argc, char* argv[])
 	}
 
 
-	mergesort(info, 0, numOfEntries-2,argv[2]);
+	mergesort(info, 0, numOfEntries-2,c);
 
 	//mergesort(info, 0, numOfEntries,argv[1]);
 	print(info, numOfEntries);
@@ -356,5 +319,52 @@ int main(int argc, char* argv[])
 	deallocate(numOfEntries);
 	fclose(fp);
 	remove(".temp");
+}
+
+int main(int argc, char* argv[])
+{
+	
+	if(argc < 3)
+	{
+		printf("ERROR00: Invalid number of inputs. Exiting\n");
+		return 0;
+	}
+	int i;
+	for(i = 1; i < argc; i++){
+            if(argv[i][0] == '-'){
+		if(i+1 >= argc){
+			printf("ERROR09: Invalid parameters. Exiting\n");
+			return 0;
+		}
+		switch(argv[i][1]){
+                	case 'c':
+				c = argv[i+1];
+				break;
+			case 'd':
+				d = argv[i+1];
+                        	break;
+			case 'o':
+				o = argv[i+1];
+				break;
+			default:
+				printf("ERROR08: Invalid parameter. Exiting\n");
+				return 0;
+			}
+		}
+	}
+
+	//printf("c: %d d: %d o: %d\n", c, d, o);
+	
+	/* TODO: Add error checking for directory opening */ 
+	if((int)d != 0)
+			dir = opendir(d);
+	else
+			dir = opendir("./");
+
+
+	/*	RECURSIVE MANAGER	*/
+	
+	Recurse(dir);
+
 	return 0;
 }
