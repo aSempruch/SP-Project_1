@@ -228,7 +228,14 @@ void Recurse(DIR *dir){
         if(strcmp(&ep->d_name[strlen(ep->d_name)-4], ".csv") == 0){ //Found csv file
             printf("Found csv file titled %s\n", ep->d_name);
             
-                        
+            /* Fork */
+            if(/* child process */)
+                /* Call on sorting with a file pointer to the csv */
+        }
+        else if(/* File is a directory */){
+            /* Fork new process */
+            if(/* child process */)
+                /* Open new dir and pass into Recurse */
         }
     }
 }
