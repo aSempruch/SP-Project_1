@@ -223,7 +223,14 @@ void traverse(DIR *dir){
             if(pid == 0)
                 csvHandler(fp);
         }
-        
+       
+	/*
+	if(stat(path,&path_stat) == 0)
+		if(path_stat.st_mode & S_IFDIR)
+		//bit check if they are the same->Dealing with directory
+		//Need to put in the path we are using though
+	*/
+	 
         //stat(&ep->d_name, path_stat);
         /*else if(ep->d_type == '\004' && ep->d_name[0] != '.'){ //Found directory
         
