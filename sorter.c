@@ -4,8 +4,10 @@
 #include <ctype.h>
 #include <time.h>
 #include <dirent.h>
+#include <unistd.h>
 //#include <sys/stat.h>
 //#include <sys/types.h>
+#include <sys/wait.h>
 #include "sorter.h"
 
 int entry;
@@ -15,6 +17,8 @@ movie** info;
 
 DIR *dir;
 struct dirent *ep;
+
+int csvHandler(FILE* fp);
 
 void allocate(int rows){
 	int r;
@@ -211,7 +215,18 @@ void insert(char* line){
 	}
 }	
 
-void traverse(DIR *dir){
+void traverse(char* d){
+
+	if((int)d != 0){
+			dir = opendir(d);
+	}
+	else
+			dir = opendir("./");
+			d = "./";
+
+	if(*(d+(strlen(d)-1)) != '/')
+			d = strcat(d, "/");
+
     //struct stat* path_stat;
     while(ep = readdir(dir)){
         //printf("%s -- %uc\n", ep->d_name, ep->d_type);
@@ -232,25 +247,24 @@ void traverse(DIR *dir){
 	*/
 	 
         //stat(&ep->d_name, path_stat);
-        /*else if(ep->d_type == '\004' && ep->d_name[0] != '.'){ //Found directory
-        
+        else if(ep->d_type == '\004' && ep->d_name[0] != '.'){ //Found directory
             pid_t pid;
             pid = fork();
+
             if(pid == 0){
-                char cwd[1024];
-                //getcwd(cwd, sizeof(cwd));
-                realpath(ep->d_name, cwd);
-                strcat(cwd, "/");
-                printf("Found directory: %s\n", cwd, ep->d_name);
-                dir = opendir(cwd);
+				d = strcat(d, ep->d_name);
+                printf("Found directory: %s\n", d);
+				return;
+                //dir = opendir(d);
             }
-        }*/
+        }
+		wait(NULL);
         //printf("%s : %u\n", ep->d_name, ep->d_type);
     }
     closedir(dir);
 }
 
-void csvHandler(FILE* fp){
+int csvHandler(FILE* fp){
     /*		STEP 1
 	 *Note: 'info' will be the array the file will be written into.
 	 *Also the file pointer and opener will be innitalized here too. 
@@ -355,13 +369,8 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	/* TODO: Add error checking for directory opening */ 
-	if((int)d != 0)
-			dir = opendir(d);
-	else
-			dir = opendir("./");
-	
-	traverse(dir);
+	/* TODO: Add error checking for directory opening */ 	
+	traverse(d);
 
 	return 0;
 }

@@ -2,12 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sorter.h"
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <dirent.h>
-
-
 
 void mergesort(movie **array, int l, int r, char *word)
 {
@@ -413,45 +407,3 @@ void merge(movie **array, int l, int m, int r, char *word)
 free(left);
 free(right);
 }
-
-int testString(char *str)
-{
-	/*check if last 4 chars in string are .csv*/
-
-	int len = strlen(str);
-	const char *last4 = &str[len-4];
-	return((last4 && ".csv") == 0) ? 0:1;
-
-}
-
-void ProcessDir(DIR dp)
-{
-	struct dirent *dirPtr;
-	while(dp != NULL)
-	{
-		dirPtr  = readdir(dp);
-		puts(dirPtr->d_name);
-		if (testString(dirPtr->name) == 0)
-		{
-			fork();
-			FILE *file = stdinToFile();
-			mergesort(info, 0, numOfEnteries-2,argv[2]);	
-		}
-		
-		
-	}
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
