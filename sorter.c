@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include <time.h>
 #include <dirent.h>
+//#include <sys/stat.h>
+//#include <sys/types.h>
 #include "sorter.h"
 
 int entry;
@@ -130,7 +132,6 @@ float* getFloat(movie** info,int entry, int element){
 	return NULL;
 }
 
-
 //Tokenize elements and insert them into "info" structure
 
 void insert(char* line){
@@ -210,37 +211,39 @@ void insert(char* line){
 	}
 }	
 
-
-FILE* stdinToFile(){
-	FILE *fp = fopen(".temp", "w");
-	while(!feof(stdin)){
-		fgets(stream,sizeof(stream),stdin);
-		fputs(stream, fp);
-	}
-	//rewind(fp);
-	fclose(fp);
-	fp = fopen(".temp", "r");
-	return fp;
-}
-
-void Recurse(DIR *dir){
+void traverse(DIR *dir){
+    //struct stat* path_stat;
     while(ep = readdir(dir)){
+        //printf("%s -- %uc\n", ep->d_name, ep->d_type);
         if(strcmp(&ep->d_name[strlen(ep->d_name)-4], ".csv") == 0){ //Found csv file
-            printf("Found csv file titled %s\n", ep->d_name);
-            
-            /* Fork */
-            if(/* child process */)
-                /* Call on sorting with a file pointer to the csv */
+            printf("Found csv file: %s\n", ep->d_name);
+            FILE *fp = fopen(ep->d_name, "r");
+            pid_t  pid;
+            pid = fork();
+            if(pid == 0)
+                csvHandler(fp);
         }
-        else if(/* File is a directory */){
-            /* Fork new process */
-            if(/* child process */)
-                /* Open new dir and pass into Recurse */
-        }
+        
+        //stat(&ep->d_name, path_stat);
+        /*else if(ep->d_type == '\004' && ep->d_name[0] != '.'){ //Found directory
+        
+            pid_t pid;
+            pid = fork();
+            if(pid == 0){
+                char cwd[1024];
+                //getcwd(cwd, sizeof(cwd));
+                realpath(ep->d_name, cwd);
+                strcat(cwd, "/");
+                printf("Found directory: %s\n", cwd, ep->d_name);
+                dir = opendir(cwd);
+            }
+        }*/
+        //printf("%s : %u\n", ep->d_name, ep->d_type);
     }
+    closedir(dir);
 }
 
-void CsvHandler(char* fileName){
+void csvHandler(FILE* fp){
     /*		STEP 1
 	 *Note: 'info' will be the array the file will be written into.
 	 *Also the file pointer and opener will be innitalized here too. 
@@ -253,7 +256,6 @@ void CsvHandler(char* fileName){
 	  */
 	int numOfEntries = 0, numOfColumns = 1;
 	int buff;
-	FILE* fp = stdinToFile();
 	//NOTE: Found out why its freezing
 	while(!feof(fp))
 	{
@@ -267,13 +269,7 @@ void CsvHandler(char* fileName){
 	}
 
 	rewind(fp);
-/*
-	if(!(fp = fopen(argv[1],"r")))
-        {
-                printf("ERROR01: Unable to open file, or file not found. Exiting Program.\n");
-                return 0;
-        }
-*/
+
         if(fp == NULL)
         {
                 printf("ERROR02: Empty input. Exiting Program.\n");
@@ -299,7 +295,6 @@ void CsvHandler(char* fileName){
 	while(!feof(fp))
 	{	
 		fgets(stream,sizeof(stream),fp);
-		//printf("Stream --> %s\n", stream);
 		if(k != 0)
 			insert(stream);
 		else{
@@ -315,17 +310,10 @@ void CsvHandler(char* fileName){
 
 
 	mergesort(info, 0, numOfEntries-2,c);
-
-	//mergesort(info, 0, numOfEntries,argv[1]);
-	print(info, numOfEntries);
-
-
-	//printf("Genres: '%s'\n", info[100]->genres);
-	//printf("Num of entries: %d\n", numOfEntries);
-	//printf("Deallocating\n");
+	//print(info, numOfEntries);
 	deallocate(numOfEntries);
 	fclose(fp);
-	remove(".temp");
+        return 0;
 }
 
 int main(int argc, char* argv[])
@@ -359,19 +347,14 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
-
-	//printf("c: %d d: %d o: %d\n", c, d, o);
 	
 	/* TODO: Add error checking for directory opening */ 
 	if((int)d != 0)
 			dir = opendir(d);
 	else
 			dir = opendir("./");
-
-
-	/*	RECURSIVE MANAGER	*/
 	
-	Recurse(dir);
+	traverse(dir);
 
 	return 0;
 }
