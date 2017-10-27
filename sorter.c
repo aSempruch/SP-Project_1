@@ -11,7 +11,7 @@
 #include "sorter.h"
 
 int entry;
-char *c, *o, d[1024];
+char *c, *o;
 char stream[1024];
 movie** info;
 
@@ -217,19 +217,17 @@ void insert(char* line){
 
 void traverse(char d[]){
 
-	if(d[0] != '\0'){
+	if(d[0] != '\0')
 			dir = opendir(d);
-	}
-	else
-			dir = opendir("./");
-			d = "./";
-
+	else{
+            dir = opendir("./");
+            d[0]='.';d[1]='/';d[2]='\0';
+        }
 	if(*(d+(strlen(d)-1)) != '/')
-			strcat(d, "/");
-	char *test = "testing123";
+            strcat(d, "/");
 
     //struct stat* path_stat;
-    while(ep = readdir(dir)){
+    while((ep = readdir(dir))){
         //printf("%s -- %uc\n", ep->d_name, ep->d_type);
         if(strcmp(&ep->d_name[strlen(ep->d_name)-4], ".csv") == 0){ //Found csv file
             printf("Found csv file: %s\n", ep->d_name);
@@ -249,17 +247,17 @@ void traverse(char d[]){
 	 
         //stat(&ep->d_name, path_stat);
         else if(ep->d_type == '\004' && ep->d_name[0] != '.'){ //Found directory
+                  
             pid_t pid;
             pid = fork();
 
             if(pid == 0){
-				strcat(d, ep->d_name);
-				printf("Found directory: %s\n", d);
-				return;
-                //dir = opendir(d);
+		strcat(d, ep->d_name);strcat(d, "/");
+                printf("Found directory: %s\n", d, ep->d_name);
+                dir = opendir(d);
             }
         }
-		wait(NULL);
+	wait(NULL);
         //printf("%s : %u\n", ep->d_name, ep->d_type);
     }
     closedir(dir);
@@ -340,7 +338,7 @@ int csvHandler(FILE* fp){
 
 int main(int argc, char* argv[])
 {
-	
+    char d[1024];
 	if(argc < 3)
 	{
 		printf("ERROR00: Invalid number of inputs. Exiting\n");
@@ -371,7 +369,7 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	/* TODO: Add error checking for directory opening */ 	
+	/* TODO: Add error checking for directory opening */
 	traverse(d);
 
 	return 0;
