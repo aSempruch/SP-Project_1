@@ -11,7 +11,7 @@
 #include "sorter.h"
 
 int entry;
-char *c, *o, *d;
+char *c, *o, d[1024];
 char stream[1024];
 movie** info;
 
@@ -215,9 +215,9 @@ void insert(char* line){
 	}
 }	
 
-void traverse(char* d){
+void traverse(char d[]){
 
-	if((int)d != 0){
+	if(d[0] != '\0'){
 			dir = opendir(d);
 	}
 	else
@@ -225,7 +225,8 @@ void traverse(char* d){
 			d = "./";
 
 	if(*(d+(strlen(d)-1)) != '/')
-			d = strcat(d, "/");
+			strcat(d, "/");
+	char *test = "testing123";
 
     //struct stat* path_stat;
     while(ep = readdir(dir)){
@@ -252,8 +253,8 @@ void traverse(char* d){
             pid = fork();
 
             if(pid == 0){
-				d = strcat(d, ep->d_name);
-                printf("Found directory: %s\n", d);
+				strcat(d, ep->d_name);
+				printf("Found directory: %s\n", d);
 				return;
                 //dir = opendir(d);
             }
@@ -357,7 +358,8 @@ int main(int argc, char* argv[])
 				c = argv[i+1];
 				break;
 			case 'd':
-				d = argv[i+1];
+				//d = argv[i+1];
+				memcpy(d, argv[i+1], strlen(argv[i+1]));
                         	break;
 			case 'o':
 				o = argv[i+1];
