@@ -11,14 +11,14 @@
 #include "sorter.h"
 
 int entry;
-char *c, *o;
+char *c, o[1024];
 char stream[1024];
 movie** info;
 
 DIR *dir;
 struct dirent *ep;
 
-int csvHandler(FILE* fp);
+int csvHandler(FILE* fp, char* d, char fileName[]);
 
 void allocate(int rows){
 	int r;
@@ -223,29 +223,30 @@ void traverse(char d[]){
             dir = opendir("./");
             d[0]='.';d[1]='/';d[2]='\0';
         }
+        if(o[0] != '\0' && *(o+strlen(o)-1) != '/')
+            strcat(o, "/");
+        
 	if(*(d+(strlen(d)-1)) != '/')
             strcat(d, "/");
 
-    //struct stat* path_stat;
     while((ep = readdir(dir))){
-        //printf("%s -- %uc\n", ep->d_name, ep->d_type);
         if(strcmp(&ep->d_name[strlen(ep->d_name)-4], ".csv") == 0){ //Found csv file
-            printf("Found csv file: %s\n", ep->d_name);
-            FILE *fp = fopen(ep->d_name, "r");
+            printf("Found csv file: %s%s\n", d, ep->d_name);
             pid_t  pid;
             pid = fork();
-            if(pid == 0)
-                csvHandler(fp);
+            if(pid == 0){
+                
+                char temp[1024];
+                strcpy(temp, d);
+                FILE *fp = fopen(strcat(temp, ep->d_name), "r");
+                if(o[0] == '\0')
+                    csvHandler(fp, d, ep->d_name);
+                    
+                else
+                    csvHandler(fp, o, ep->d_name);
+            }
         }
-       
-	/*
-	if(stat(path,&path_stat) == 0)
-		if(path_stat.st_mode & S_IFDIR)
-		//bit check if they are the same->Dealing with directory
-		//Need to put in the path we are using though
-	*/
 	 
-        //stat(&ep->d_name, path_stat);
         else if(ep->d_type == '\004' && ep->d_name[0] != '.'){ //Found directory
                   
             pid_t pid;
@@ -253,22 +254,19 @@ void traverse(char d[]){
 
             if(pid == 0){
 		strcat(d, ep->d_name);strcat(d, "/");
-                printf("Found directory: %s\n", d, ep->d_name);
                 dir = opendir(d);
             }
         }
 	wait(NULL);
-        //printf("%s : %u\n", ep->d_name, ep->d_type);
     }
     closedir(dir);
 }
 
-int csvHandler(FILE* fp){
+int csvHandler(FILE* fp, char* d, char fileName[]){
     /*		STEP 1
 	 *Note: 'info' will be the array the file will be written into.
 	 *Also the file pointer and opener will be innitalized here too. 
 	 */
-	
 	entry = -1;
 	   
 	 /*		STEP 2.1
@@ -289,6 +287,7 @@ int csvHandler(FILE* fp){
 	}
 
 	rewind(fp);
+
 
         if(fp == NULL)
         {
@@ -328,9 +327,8 @@ int csvHandler(FILE* fp){
 		entry++;
 	}
 
-
 	mergesort(info, 0, numOfEntries-2,c);
-	//print(info, numOfEntries);
+	print(info, numOfEntries, fileName, d);
 	deallocate(numOfEntries);
 	fclose(fp);
         return 0;
@@ -360,7 +358,8 @@ int main(int argc, char* argv[])
 				memcpy(d, argv[i+1], strlen(argv[i+1]));
                         	break;
 			case 'o':
-				o = argv[i+1];
+				//o = argv[i+1];
+                                memcpy(o, argv[i+1], strlen(argv[i+1]));
 				break;
 			default:
 				printf("ERROR08: Invalid parameter. Exiting\n");

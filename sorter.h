@@ -1,6 +1,8 @@
 #ifndef _SORTER_H_
 #define _SORTER_H_
 
+char *c;
+
 typedef struct movie_
 {
 	char *color;
@@ -41,7 +43,7 @@ void insert(char* line);
 void merge(movie **array, int p, int q, int r, char * word);
 int getKey(char *word);
 void mergesort(movie **array, int a, int b, char *word);
-void print(movie **info, int numOfEntries);
+void print(movie **info, int numOfEntries, char* fileName, char* path);
 
 #endif
 /*****
