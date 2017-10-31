@@ -7,6 +7,7 @@
 #include <unistd.h>
 //#include <sys/stat.h>
 //#include <sys/types.h>
+#include <sys/mman.h>
 #include <sys/wait.h>
 #include "sorter.h"
 
@@ -15,6 +16,7 @@ char *c, o[1024];
 char stream[1024];
 movie** info;
 int *totalProcesses;
+pid_t root;
 //int status[256];
 
 DIR *dir;
@@ -217,7 +219,7 @@ void insert(char* line){
 	}
 }	
 
-int traverse(char d[]){
+void traverse(char d[]){
 
 	if(d[0] != '\0')
 			dir = opendir(d);
@@ -230,9 +232,7 @@ int traverse(char d[]){
         
 	if(*(d+(strlen(d)-1)) != '/')
             strcat(d, "/");
-	int* status;
-	int retVal = 0;
-	status = &retVal;
+	int status = 1;
     while((ep = readdir(dir))){
         if(strcmp(&ep->d_name[strlen(ep->d_name)-4], ".csv") == 0){ //Found csv file
 			char *trv, foundSorted = '0';
@@ -246,13 +246,16 @@ int traverse(char d[]){
 					continue;
 
             //printf("Found csv file: %s%s\n", d, ep->d_name);
-            pid_t  pid;
+			(*totalProcesses)++;
+            pid_t pid;
             pid = fork();
-			
+
             if(pid == 0){
                 //printf("Forking for csv file %s\n",ep->d_name);
-				(*totalProcesses)++;
-				printf("%d,", getpid());
+				//(*totalProcesses)++;
+				if(*totalProcesses > 1)
+						printf(",");
+				printf("%d", getpid());
 				fflush(stdout);
                 char temp[1024];
                 strcpy(temp, d);
@@ -261,34 +264,43 @@ int traverse(char d[]){
                     csvHandler(fp, d, ep->d_name);
                 else
                     csvHandler(fp, o, ep->d_name);
-				printf("CSV File: Returning %d\n", (*totalProcesses)+1);
-				return (*totalProcesses)+1;
+				//printf("CSV File: Returning %d\n", (*totalProcesses)+1);
+				return;
             }
 			//ep = readdir(dir);
         }
 	 
         else if(ep->d_type == '\004' && ep->d_name[0] != '.'){ //Found directory
-            //printf("Found directory %s\n", ep->d_name);     
+            //printf("Found directory %s\n", ep->d_name);
+			(*totalProcesses)++;
+
+			//if(root != getpid())
+					//printf(",");
             pid_t pid;
-            pid = fork();
+			pid = fork();
 			
             if(pid == 0){
-				(*totalProcesses)++;
-
+				//(*totalProcesses)++;
+				if(*totalProcesses > 1)
+						printf(",");
 				//printf("Forking for directory %s\n", ep->d_name);
-				printf("%d,", getpid());
+				printf("%d", getpid());
 				fflush(stdout);
 
 				strcat(d, ep->d_name);strcat(d, "/");
                 dir = opendir(d);
+				continue;
             }//printf("PID: %d\n", pid);
         }
 	}
 	closedir(dir);
-	wait(status);
-	printf("Returning %d\n", (*totalProcesses)+1);
-	return (*totalProcesses)+1;
+	wait(&status);
+	//printf("Returning %d\n", (*totalProcesses));
+	//printf("Exit status: %d\n", WEXITSTATUS(status));
+	//*totalProcesses += WEXITSTATUS(status);
 	//printf("Process finished at %s\n", d);
+
+	
 }
 
 int csvHandler(FILE* fp, char* d, char fileName[]){
@@ -366,8 +378,9 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
 
 int main(int argc, char* argv[])
 {
-	pid_t root = getpid();
-	totalProcesses = malloc(sizeof(int));
+	root = getpid();
+	totalProcesses = mmap(NULL, sizeof *totalProcesses, PROT_READ | PROT_WRITE,MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	//totalProcesses = malloc(sizeof(int));
 	*totalProcesses = 1;
     char d[1024];
 	d[8] = '\0';
@@ -385,7 +398,7 @@ int main(int argc, char* argv[])
 			return 0;
 		}
 		switch(argv[i][1]){
-                	case 'c':
+            case 'c':
 				c = argv[i+1];
 				break;
 			case 'd':
@@ -407,10 +420,11 @@ int main(int argc, char* argv[])
 	printf("Initial PID: %d\n", getpid());
 	printf("PID of all child processes: ");
 	fflush(stdout);
-	*totalProcesses = traverse(d);
+	traverse(d);
 
-	if(getpid() == root)
-		printf("\nTotal Number of processes: %d\n",*totalProcesses);
-	free(totalProcesses);
+	//if(getpid() == root)
+	//	printf("\nTotal Number of processes: %d\n",*totalProcesses);
+	
+	//free(totalProcesses);
 	return 0;
 }
