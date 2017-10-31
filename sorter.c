@@ -231,7 +231,7 @@ void traverse(char d[]){
 
     while((ep = readdir(dir))){
         if(strcmp(&ep->d_name[strlen(ep->d_name)-4], ".csv") == 0){ //Found csv file
-            printf("Found csv file: %s%s\n", d, ep->d_name);
+            //printf("Found csv file: %s%s\n", d, ep->d_name);
             pid_t  pid;
             pid = fork();
             if(pid == 0){
@@ -244,7 +244,7 @@ void traverse(char d[]){
                     
                 else
                     csvHandler(fp, o, ep->d_name);
-            }
+            }printf("PID: %d\n", pid);
         }
 	 
         else if(ep->d_type == '\004' && ep->d_name[0] != '.'){ //Found directory
@@ -255,7 +255,7 @@ void traverse(char d[]){
             if(pid == 0){
 		strcat(d, ep->d_name);strcat(d, "/");
                 dir = opendir(d);
-            }
+            }//printf("PID: %d\n", pid);
         }
 	wait(NULL);
     }
