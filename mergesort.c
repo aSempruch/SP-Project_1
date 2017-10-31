@@ -34,7 +34,7 @@ void print(movie **info, int numOfEntries, char fileName[], char* path){
     strcat(outFile, c);
     strcat(outFile, ".csv");
     
-    printf("Creating file %s\n", outFile);
+    //printf("Creating file %s\n", outFile);
     FILE* fp = fopen(outFile, "w");
     
     free(outFile);

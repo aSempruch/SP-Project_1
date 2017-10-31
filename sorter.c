@@ -14,6 +14,8 @@ int entry;
 char *c, o[1024];
 char stream[1024];
 movie** info;
+int *totalProcesses;
+//int status[256];
 
 DIR *dir;
 struct dirent *ep;
@@ -215,7 +217,7 @@ void insert(char* line){
 	}
 }	
 
-void traverse(char d[]){
+int traverse(char d[]){
 
 	if(d[0] != '\0')
 			dir = opendir(d);
@@ -228,38 +230,65 @@ void traverse(char d[]){
         
 	if(*(d+(strlen(d)-1)) != '/')
             strcat(d, "/");
-
+	int* status;
+	int retVal = 0;
+	status = &retVal;
     while((ep = readdir(dir))){
         if(strcmp(&ep->d_name[strlen(ep->d_name)-4], ".csv") == 0){ //Found csv file
+			char *trv, foundSorted = '0';
+			for(trv = ep->d_name; *trv!='\0'; trv++){
+				if(strncmp(trv, "-sorted-", 8) == 0){
+						foundSorted = '1';
+						//printf("%s already contains -sorted-!\n", ep->d_name);
+				}
+			}
+			if(foundSorted == '1')
+					continue;
+
             //printf("Found csv file: %s%s\n", d, ep->d_name);
             pid_t  pid;
             pid = fork();
+			
             if(pid == 0){
-                
+                //printf("Forking for csv file %s\n",ep->d_name);
+				(*totalProcesses)++;
+				printf("%d,", getpid());
+				fflush(stdout);
                 char temp[1024];
                 strcpy(temp, d);
                 FILE *fp = fopen(strcat(temp, ep->d_name), "r");
                 if(o[0] == '\0')
                     csvHandler(fp, d, ep->d_name);
-                    
                 else
                     csvHandler(fp, o, ep->d_name);
-            }printf("PID: %d\n", pid);
+				printf("CSV File: Returning %d\n", (*totalProcesses)+1);
+				return (*totalProcesses)+1;
+            }
+			//ep = readdir(dir);
         }
 	 
         else if(ep->d_type == '\004' && ep->d_name[0] != '.'){ //Found directory
-                  
+            //printf("Found directory %s\n", ep->d_name);     
             pid_t pid;
             pid = fork();
-
+			
             if(pid == 0){
-		strcat(d, ep->d_name);strcat(d, "/");
+				(*totalProcesses)++;
+
+				//printf("Forking for directory %s\n", ep->d_name);
+				printf("%d,", getpid());
+				fflush(stdout);
+
+				strcat(d, ep->d_name);strcat(d, "/");
                 dir = opendir(d);
             }//printf("PID: %d\n", pid);
         }
-	wait(NULL);
-    }
-    closedir(dir);
+	}
+	closedir(dir);
+	wait(status);
+	printf("Returning %d\n", (*totalProcesses)+1);
+	return (*totalProcesses)+1;
+	//printf("Process finished at %s\n", d);
 }
 
 int csvHandler(FILE* fp, char* d, char fileName[]){
@@ -318,6 +347,7 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
 			insert(stream);
 		else{
 				if(strncmp(stream, "color,director_name,num_critic_for_reviews,duration,director_facebook_likes,actor_3_facebook_likes,actor_2_name,actor_1_facebook_likes,gross,genres,actor_1_name,movie_title,num_voted_users,cast_total_facebook_likes,actor_3_name,facenumber_in_poster,plot_keywords,movie_imdb_link,num_user_for_reviews,language,country,content_rating,budget,title_year,actor_2_facebook_likes,imdb_score,aspect_ratio,movie_facebook_likes", 417) != 0){
+					printf("Found directory: %s\n", d);
 					printf("ERROR04: Invalid column names. Exiting\n");
 					deallocate(numOfEntries);
 					return 0;
@@ -336,6 +366,9 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
 
 int main(int argc, char* argv[])
 {
+	pid_t root = getpid();
+	totalProcesses = malloc(sizeof(int));
+	*totalProcesses = 1;
     char d[1024];
 	d[8] = '\0';
 	d[0] = '\0';
@@ -371,7 +404,13 @@ int main(int argc, char* argv[])
 	}
 	
 	/* TODO: Add error checking for directory opening */
-	traverse(d);
+	printf("Initial PID: %d\n", getpid());
+	printf("PID of all child processes: ");
+	fflush(stdout);
+	*totalProcesses = traverse(d);
 
+	if(getpid() == root)
+		printf("\nTotal Number of processes: %d\n",*totalProcesses);
+	free(totalProcesses);
 	return 0;
 }
