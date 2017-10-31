@@ -337,6 +337,7 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
 int main(int argc, char* argv[])
 {
     char d[1024];
+	d[8] = '\0';
 	d[0] = '\0';
 	if(argc < 3)
 	{
