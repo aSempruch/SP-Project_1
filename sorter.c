@@ -435,7 +435,7 @@ int main(int argc, char* argv[])
 	}
 	
 	/* TODO: Add error checking for directory opening */
-	if(access(o, F_OK) == -1)
+	if(o[0] != '\0'  && access(o, F_OK) == -1)
 	{
 		printf("ERROR11: No such output directory exists. Exiting program.\n");
 		exit(0);
