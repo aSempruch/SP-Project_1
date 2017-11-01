@@ -10,6 +10,7 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include "sorter.h"
+#include <errno.h>
 
 int entry;
 char *c, o[1024], *d;
@@ -223,14 +224,17 @@ void insert(char* line){
 void traverse(char d[]){
 
 	if(d[0] != '\0')
-			dir = opendir(d);
+	    dir = opendir(d);
+	    if(ENOENT == errno){
+	        printf("\nERROR10: No such directory exists. Exiting program.\n");
+	        exit(0);
+	    }
 	else{
             dir = opendir("./");
             d[0]='.';d[1]='/';d[2]='\0';
         }
         if(o[0] != '\0' && *(o+strlen(o)-1) != '/')
             strcat(o, "/");
-        
 	if(*(d+(strlen(d)-1)) != '/')
             strcat(d, "/");
 	int status = 1;
@@ -431,6 +435,11 @@ int main(int argc, char* argv[])
 	}
 	
 	/* TODO: Add error checking for directory opening */
+	if(access(o, F_OK) == -1)
+	{
+		printf("ERROR11: No such output directory exists. Exiting program.\n");
+		exit(0);
+	}
 	printf("Initial PID: %d\n", getpid());
 	printf("PID of all child processes: ");
 	fflush(stdout);
