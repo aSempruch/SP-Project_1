@@ -12,7 +12,7 @@
 #include "sorter.h"
 
 int entry;
-char *c, o[1024];
+char *c, o[1024], *d;
 char stream[1024];
 movie** info;
 int *totalProcesses;
@@ -155,7 +155,8 @@ void insert(char* line){
 			int position = 0, par = 0, space = 0;// print;
 			while(line[k] != ',' || par == 1){
 				if(line[k] == '"'){
-					//Quotations Detected
+	pid_t parent = getpid();
+				//Quotations Detected
 					if(par == 0)
 						par = 1;
 					else
@@ -253,17 +254,21 @@ void traverse(char d[]){
             if(pid == 0){
                 //printf("Forking for csv file %s\n",ep->d_name);
 				//(*totalProcesses)++;
-				if(*totalProcesses > 1)
-						printf(",");
-				printf("%d", getpid());
+				//if(*totalProcesses > 1){
+				//		printf(",");
+				//		fflush(stdout);
+				//}
+				printf("%d,", getpid());
 				fflush(stdout);
                 char temp[1024];
                 strcpy(temp, d);
                 FILE *fp = fopen(strcat(temp, ep->d_name), "r");
                 if(o[0] == '\0')
                     csvHandler(fp, d, ep->d_name);
-                else
+                else{
+					//printf("Custom o parameter: %s\n", o);
                     csvHandler(fp, o, ep->d_name);
+				}
 				//printf("CSV File: Returning %d\n", (*totalProcesses)+1);
 				return;
             }
@@ -281,10 +286,12 @@ void traverse(char d[]){
 			
             if(pid == 0){
 				//(*totalProcesses)++;
-				if(*totalProcesses > 1)
-						printf(",");
+				//if(*totalProcesses > 1){
+				//		printf(",");
+				//		fflush(stdout);
+				//}
 				//printf("Forking for directory %s\n", ep->d_name);
-				printf("%d", getpid());
+				printf("%d,", getpid());
 				fflush(stdout);
 
 				strcat(d, ep->d_name);strcat(d, "/");
@@ -299,7 +306,7 @@ void traverse(char d[]){
 	//printf("Exit status: %d\n", WEXITSTATUS(status));
 	//*totalProcesses += WEXITSTATUS(status);
 	//printf("Process finished at %s\n", d);
-
+	return;
 	
 }
 
@@ -382,9 +389,12 @@ int main(int argc, char* argv[])
 	totalProcesses = mmap(NULL, sizeof *totalProcesses, PROT_READ | PROT_WRITE,MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 	//totalProcesses = malloc(sizeof(int));
 	*totalProcesses = 1;
-    char d[1024];
-	d[8] = '\0';
+    //char d[2048];
+	//d[8] = '\0';
+	d = malloc(sizeof(char)*1024);
+	c = malloc(sizeof(char)*1024);
 	d[0] = '\0';
+	o[0] = '\0';
 	if(argc < 3)
 	{
 		printf("ERROR00: Invalid number of inputs. Exiting\n");
@@ -421,10 +431,12 @@ int main(int argc, char* argv[])
 	printf("PID of all child processes: ");
 	fflush(stdout);
 	traverse(d);
-
-	//if(getpid() == root)
-	//	printf("\nTotal Number of processes: %d\n",*totalProcesses);
+	wait(NULL);
+	if(getpid() == root)
+		printf("\nTotal Number of processes: %d\n",*totalProcesses);
 	
 	//free(totalProcesses);
+	free(d);
+	//free(o);
 	return 0;
 }

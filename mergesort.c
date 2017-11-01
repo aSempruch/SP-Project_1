@@ -25,19 +25,21 @@ void mergesort(movie **array, int l, int r, char *word)
 
 
 void print(movie **info, int numOfEntries, char fileName[], char* path){
-
-    char *outFile = malloc(strlen(path)+strlen(fileName)+10);
-    outFile = memcpy(outFile, path, strlen(path)+1);
+	//printf("Here\n");
+	//printf("Trying to create file %s%s\n", path, fileName);
+    //char *outFile = malloc(strlen(path)+strlen(fileName)+10);
+	char* outFile = path;
+    //char* outFile = memcpy(outFile, path, strlen(path)+1);
     strcat(outFile, fileName);
     outFile[strlen(outFile)-4] = '\0';
     strcat(outFile, "-sorted-");
     strcat(outFile, c);
     strcat(outFile, ".csv");
     
-    //printf("Creating file %s\n", outFile);
+    //printf("Created file %s\n", outFile);
     FILE* fp = fopen(outFile, "w");
     
-    free(outFile);
+    //free(outFile);
     
     
 	int i;
