@@ -10,6 +10,7 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include "sorter.h"
+#include <errno.h>
 
 int entry;
 char *c, o[1024], *d;
@@ -155,7 +156,6 @@ void insert(char* line){
 			int position = 0, par = 0, space = 0;// print;
 			while(line[k] != ',' || par == 1){
 				if(line[k] == '"'){
-	pid_t parent = getpid();
 				//Quotations Detected
 					if(par == 0)
 						par = 1;
@@ -222,15 +222,19 @@ void insert(char* line){
 
 void traverse(char d[]){
 
-	if(d[0] != '\0')
-			dir = opendir(d);
+	if(d[0] != '\0'){
+	    dir = opendir(d);
+	    if(ENOENT == errno){
+	        printf("\nERROR10: No such directory exists. Exiting program.\n");
+	        exit(0);
+	    }
+	}
 	else{
             dir = opendir("./");
             d[0]='.';d[1]='/';d[2]='\0';
         }
         if(o[0] != '\0' && *(o+strlen(o)-1) != '/')
             strcat(o, "/");
-        
 	if(*(d+(strlen(d)-1)) != '/')
             strcat(d, "/");
 	int status = 1;
@@ -370,7 +374,7 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
 			insert(stream);
 		else{
 				if(strncmp(stream, "color,director_name,num_critic_for_reviews,duration,director_facebook_likes,actor_3_facebook_likes,actor_2_name,actor_1_facebook_likes,gross,genres,actor_1_name,movie_title,num_voted_users,cast_total_facebook_likes,actor_3_name,facenumber_in_poster,plot_keywords,movie_imdb_link,num_user_for_reviews,language,country,content_rating,budget,title_year,actor_2_facebook_likes,imdb_score,aspect_ratio,movie_facebook_likes", 417) != 0){
-					printf("Found directory: %s\n", d);
+					//printf("Found directory: %s\n", d);
 					printf("ERROR04: Invalid column names. Exiting\n");
 					deallocate(numOfEntries);
 					return 0;
@@ -404,9 +408,10 @@ int main(int argc, char* argv[])
 		printf("ERROR00: Invalid number of inputs. Exiting\n");
 		return 0;
 	}
-	int i;
+	int i,t_params = 0;
 	for(i = 1; i < argc; i++){
             if(argv[i][0] == '-'){
+					t_params++;
 		if(i+1 >= argc){
 			printf("ERROR09: Invalid parameters. Exiting\n");
 			return 0;
@@ -425,14 +430,29 @@ int main(int argc, char* argv[])
 				break;
 			default:
 				printf("ERROR08: Invalid parameter. Exiting\n");
-				return 0;
+				exit(0);
 			}
 		}
 	}
+
+	if(t_params*2 < (argc-1)){
+		printf("ERROR12: Invalid Arguments. Exiting\n");
+		exit(0);
+	}
 	
-	/* TODO: Add error checking for directory opening */
+	if(o[0] != '\0'  && access(o, F_OK) == -1)
+	{
+		printf("ERROR11: No such output directory exists. Exiting program.\n");
+		exit(0);
+	}
+
+	if(getKey(c) == 30){
+		printf("Invalid column name. Exiting\n");
+		exit(0);
+	}	
+
 	printf("Initial PID: %d\n", getpid());
-	printf("PID of all child processes: ");
+	printf("PIDs of all child processes: ");
 	fflush(stdout);
 	traverse(d);
 	wait(NULL);
