@@ -14,6 +14,7 @@
 
 int entry;
 char *c, o[1024], *d;
+//pid_t PIDs[1024];
 char stream[1024];
 movie** info;
 int *totalProcesses;
@@ -348,12 +349,14 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
         if(fp == NULL)
         {
                 //printf("ERROR02: Empty input. Exiting Program.\n");
-                return 0;
+                //exit(0);
+				return 0;
         }
         else if(getKey(c) == 30)
         {
                 //printf("ERROR03: Invalid key word. Exiting Program.\n");
-                return 0;
+                //exit(0);
+				return 0;
         }
 
 
@@ -379,6 +382,7 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
 					deallocate(numOfEntries);
 					//wait(NULL);
 					return 0;
+					//exit(0);
 			}
 			k = 1;
 		}
@@ -391,6 +395,7 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
 	//wait(NULL);
 	fclose(fp);
         return 0;
+		//exit(0);
 }
 
 int main(int argc, char* argv[])
@@ -460,8 +465,10 @@ int main(int argc, char* argv[])
 	fflush(stdout);
 	wait(NULL);
 	fflush(stdout);
-	if(getpid() == root)
+	if(getpid() == root){
+	    wait(NULL);
 		printf("\nTotal Number of processes: %d\n",*totalProcesses);
+	}
 	
 	//free(totalProcesses);
 	free(d);
