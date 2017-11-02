@@ -377,7 +377,7 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
 					//printf("Found directory: %s\n", d);
 					//printf("ERROR04: Invalid column names. Exiting\n");
 					deallocate(numOfEntries);
-					wait(NULL);
+					//wait(NULL);
 					return 0;
 			}
 			k = 1;
@@ -388,6 +388,7 @@ int csvHandler(FILE* fp, char* d, char fileName[]){
 	mergesort(info, 0, numOfEntries-2,c);
 	print(info, numOfEntries, fileName, d);
 	deallocate(numOfEntries);
+	//wait(NULL);
 	fclose(fp);
         return 0;
 }
@@ -456,7 +457,9 @@ int main(int argc, char* argv[])
 	printf("PIDs of all child processes: ");
 	fflush(stdout);
 	traverse(d);
+	fflush(stdout);
 	wait(NULL);
+	fflush(stdout);
 	if(getpid() == root)
 		printf("\nTotal Number of processes: %d\n",*totalProcesses);
 	
