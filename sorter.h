@@ -44,6 +44,7 @@ void merge(movie **array, int p, int q, int r, char * word);
 int getKey(char *word);
 void mergesort(movie **array, int a, int b, char *word);
 void print(movie **info, int numOfEntries, char* fileName, char* path);
+void traverse(char d[]);
 
 #endif
 /*****
